@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <unistd.h>
+#include <string.h>
 
 fact(n) {
 	return n == 0 ? 1 : n*fact(n-1);
