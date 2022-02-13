@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <semaphore.h>
 
 fact(n) {
 	return n == 0 ? 1 : n*fact(n-1);
@@ -20,7 +19,6 @@ main() {
 	char f[1024];
 	char* hello = "I am a system call!";
 	char* address = NULL;
-	sem_t* mutex;
 	unlink("/tmp/fifo00.1");
 	if(mkfifo("/tmp/fifo00.1", S_IWUSR | S_IRUSR) == -1) {
 		perror("File is not created!");
@@ -33,8 +31,6 @@ main() {
 	}
 	else if(pid) {
 		int readfile = open("/tmp/fifo00.1", O_RDONLY);
-		mutex = sem_open("/tmp/sem", O_CREAT, 0777, 1);
-		sem_unlink("/tmp/sem");
 		address = mmap(NULL, 1024, PROT_READ|PROT_WRITE, MAP_SHARED, readfile, 0);
 		wait(NULL);
 		read(readfile, f, 1024);
@@ -46,7 +42,6 @@ main() {
 		exit(EXIT_SUCCESS);
 	}
 	else if(!pid) {
-		mutex = sem_open("/tmp/sem", O_CREAT, 0777, 1);
 		int length = snprintf(f, 1024, "Fact of %d is %d\n", n, fact(n));
 		//int writefile = open("/tmp/fifo00.1", O_WRONLY);
 		write(address, f, strlen(f));
